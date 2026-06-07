@@ -2,6 +2,7 @@ package com.main.controller;
 
 import java.util.List;
 
+import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.main.dto.ProductDto;
+import com.main.dto.ProductResponse;
 import com.main.service.ProductService;
 
 @RestController
@@ -37,18 +40,23 @@ public class ProductController {
 		return new ResponseEntity<>("Save Success", HttpStatus.CREATED);
 	}
 
-	@GetMapping("/getAll")
-	public ResponseEntity<?> getAllProduct() {
-		List<ProductDto> allProduct = productService.getAllProduct();
+	@GetMapping("/getProducts")
+	public ResponseEntity<?> getProductPagination(@RequestParam(name = "pageNo", defaultValue = "0") int pageNo,
+			@RequestParam(name = "pageSize", defaultValue = "2") int pageSize,
+			@RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+			@RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
+//		List<ProductDto> allProduct = productService.getAllProduct();
+		ProductResponse productWithPagination = null;
 		try {
-			if (CollectionUtils.isEmpty(allProduct)) {
+			productWithPagination = productService.getProductWithPagination(pageNo, pageSize, sortBy, sortDir);
+			if (ObjectUtils.isEmpty(productWithPagination)) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 
 		}
-		return new ResponseEntity<>(allProduct, HttpStatus.CREATED);
+		return new ResponseEntity<>(productWithPagination, HttpStatus.OK);
 	}
 
 	@GetMapping("/getById/{id}")
