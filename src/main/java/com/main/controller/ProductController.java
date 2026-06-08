@@ -42,12 +42,15 @@ public class ProductController {
 
 	@GetMapping("/getProducts")
 	public ResponseEntity<?> getProductPagination(@RequestParam(name = "pageNo", defaultValue = "0") int pageNo,
-			@RequestParam(name = "pageSize", defaultValue = "2") int pageSize,
+			@RequestParam(name = "pageSize") int pageSize,
 			@RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
 			@RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
 //		List<ProductDto> allProduct = productService.getAllProduct();
 		ProductResponse productWithPagination = null;
+//		String nameString = null;
+//		nameString.toUpperCase();
 		try {
+
 			productWithPagination = productService.getProductWithPagination(pageNo, pageSize, sortBy, sortDir);
 			if (ObjectUtils.isEmpty(productWithPagination)) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
