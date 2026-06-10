@@ -2,6 +2,7 @@ package com.main.controller;
 
 import java.util.List;
 
+import org.apache.coyote.BadRequestException;
 import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,16 +29,54 @@ public class ProductController {
 
 	@PostMapping("/saveProduct")
 	public ResponseEntity<?> saveProduct(@RequestBody ProductDto productDto) {
-		Boolean saveProduct = productService.saveProduct(productDto);
+
 		try {
+			validatProduct(productDto);
+			Boolean saveProduct = productService.saveProduct(productDto);
 			if (!saveProduct) {
 				return new ResponseEntity<>("Product not saved", HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+		} catch (BadRequestException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 
 		}
 		return new ResponseEntity<>("Save Success", HttpStatus.CREATED);
+	}
+
+	private void validatProduct(ProductDto productDto) throws BadRequestException {
+		if (productDto == null) {
+			throw new BadRequestException("Request body is required");
+		}
+
+		if (productDto.getName() == null || productDto.getName().trim().isEmpty()) {
+
+			throw new BadRequestException("Name field is required");
+		}
+
+		if (productDto.getDescription() == null || productDto.getDescription().trim().isEmpty()) {
+
+			throw new BadRequestException("Description field is required");
+		}
+
+		if (productDto.getPrice() == null) {
+			throw new BadRequestException("Price is required");
+		}
+
+		if (productDto.getPrice() <= 0) {
+			throw new BadRequestException("Price must be greater than 0");
+		}
+
+		if (productDto.getQuantity() == null) {
+			throw new BadRequestException("Quantity is required");
+		}
+
+		if (productDto.getQuantity() <= 0) {
+			throw new BadRequestException("Quantity must be greater than 0");
+		}
+
 	}
 
 	@GetMapping("/getProducts")
